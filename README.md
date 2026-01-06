@@ -1,6 +1,6 @@
 
 <div align="center">
-  <img width="800" alt="Bloom & Petal Nepal Banner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+  <img width="800" alt="Bloom & Petal Nepal Banner" src="/public/overview.png" />
   <h1>Bloom & Petal Nepal</h1>
   <p><strong>Modern e-commerce platform for Nepalese florists and customers.</strong></p>
 </div>
