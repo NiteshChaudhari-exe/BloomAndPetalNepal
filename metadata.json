@@ -1,0 +1,7 @@
+{
+  "name": "Bloom & Petal Nepal",
+  "description": "A premium floral e-commerce platform for fresh bouquets, handmade gifts, and custom floral arrangements with local delivery in Nepal.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
