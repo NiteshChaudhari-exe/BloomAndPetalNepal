@@ -15,6 +15,7 @@ export const Home: React.FC = () => {
           src="https://images.unsplash.com/photo-1490750967868-88aa4486c946?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" 
           alt="Hero Flowers" 
           className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-multiply"
+        
         />
         <div className="relative z-10 text-center px-4 max-w-4xl">
           <span className="text-rose-600 font-medium tracking-widest uppercase text-sm block mb-4">Celebrating Life's Moments</span>
