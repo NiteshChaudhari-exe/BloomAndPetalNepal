@@ -13,12 +13,16 @@ interface AppContextType {
   updateCartQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   login: (email: string) => void;
-  register: (name: string, email: string) => void;
+  register: (name: string, email: string, role: 'Admin' | 'Customer') => void;
   logout: () => void;
   placeOrder: (order: Omit<Order, 'id' | 'createdAt'>) => void;
   updateProduct: (product: Product) => void;
   deleteProduct: (id: string) => void;
   updateOrderStatus: (orderId: string, status: OrderStatus) => void;
+  updateUserProfile: (updates: Partial<User>) => void;
+  getUserOrders: (userId: string) => Order[];
+  getOrderById: (orderId: string) => Order | undefined;
+  getOrderNotifications: (userId: string) => Array<{ orderId: string; status: OrderStatus; timestamp: string }>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -96,12 +100,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setUser(mockUser);
   };
 
-  const register = (name: string, email: string) => {
+  const register = (name: string, email: string, role: 'Admin' | 'Customer' = 'Customer') => {
     const mockUser: User = {
       id: 'u-' + Math.random().toString(36).substr(2, 5),
       name,
       email,
-      role: 'Customer',
+      role,
       address: 'Kathmandu, Nepal'
     };
     setUser(mockUser);
@@ -109,10 +113,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const logout = () => {
     setUser(null);
-    clearCart();
+    // Don't clear cart - preserve for next session
   };
 
   const placeOrder = (orderData: Omit<Order, 'id' | 'createdAt'>) => {
+    // Decrement product stock
+    setProducts(prev => prev.map(p => {
+      const orderItem = orderData.items.find(item => item.productId === p.id);
+      if (orderItem) {
+        return { ...p, stock: Math.max(0, p.stock - orderItem.quantity) };
+      }
+      return p;
+    }));
+
     const newOrder: Order = {
       ...orderData,
       id: 'ORD-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
@@ -142,11 +155,35 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ));
   };
 
+  const updateUserProfile = (updates: Partial<User>) => {
+    if (user) {
+      const updated = { ...user, ...updates };
+      setUser(updated);
+    }
+  };
+
+  const getUserOrders = (userId: string) => {
+    return orders.filter(o => o.userId === userId);
+  };
+
+  const getOrderById = (orderId: string) => {
+    return orders.find(o => o.id === orderId);
+  };
+
+  const getOrderNotifications = (userId: string) => {
+    return getUserOrders(userId).map(order => ({
+      orderId: order.id,
+      status: order.status,
+      timestamp: order.createdAt
+    }));
+  };
+
   return (
     <AppContext.Provider value={{
       products, cart, user, orders,
       addToCart, removeFromCart, updateCartQuantity, clearCart,
-      login, register, logout, placeOrder, updateProduct, deleteProduct, updateOrderStatus
+      login, register, logout, placeOrder, updateProduct, deleteProduct, updateOrderStatus,
+      updateUserProfile, getUserOrders, getOrderById, getOrderNotifications
     }}>
       {children}
     </AppContext.Provider>

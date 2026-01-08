@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-floral-pastel text-stone-900 font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+  }
+}
+
+@layer components {
+  /* Glassmorphism */
+  .glass {
+    @apply bg-white/15 backdrop-blur-xl border border-white/20 shadow-glass;
+  }
+
+  .glass-dark {
+    @apply bg-black/10 backdrop-blur-xl border border-white/10;
+  }
+
+  /* Buttons */
+  .btn-primary {
+    @apply bg-rose-primary text-white px-6 py-3 rounded-full font-medium hover:bg-rose-800 transition-all transform hover:scale-105 shadow-lg;
+  }
+
+  .btn-secondary {
+    @apply bg-white text-rose-primary border border-rose-200 px-6 py-3 rounded-full font-medium hover:bg-rose-50 transition-all;
+  }
+
+  .btn-ghost {
+    @apply text-stone-700 hover:text-rose-primary transition-colors font-medium;
+  }
+
+  /* Forms */
+  .input-primary {
+    @apply w-full px-4 py-2 border border-rose-100 rounded-xl focus:ring-2 focus:ring-rose-300 focus:border-rose-400 transition-all outline-none;
+  }
+
+  /* Cards */
+  .card {
+    @apply bg-white rounded-3xl shadow-sm hover:shadow-lg transition-shadow;
+  }
+
+  .card-glass {
+    @apply glass rounded-3xl p-6;
+  }
+
+  /* Typography */
+  .section-title {
+    @apply text-3xl md:text-4xl font-serif mb-2;
+  }
+
+  .section-subtitle {
+    @apply text-stone-500 max-w-lg;
+  }
+}
+
+/* Dark mode support */
+.dark body {
+  @apply bg-stone-900 text-stone-100;
+}
+
+.dark .glass {
+  @apply bg-stone-800/20 border-stone-600/30;
+}
+
+.dark .card {
+  @apply bg-stone-800 border border-stone-700;
+}
+
+.dark .btn-ghost {
+  @apply text-stone-300 hover:text-rose-400;
+}
+
+.dark .input-primary {
+  @apply bg-stone-800 border-stone-700 text-white;
+}

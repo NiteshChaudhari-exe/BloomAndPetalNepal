@@ -1,7 +1,8 @@
-
+import './src/index.css';
 import React, { useState, useEffect } from 'react';
 import { AppProvider, useApp } from './store/AppContext';
-import { Header, Footer } from './components/Layout';
+import { Footer } from './pages/Footer';
+import { Header } from './pages/Header';
 import { Home } from './pages/Home';
 import { Shop } from './pages/Shop';
 import { ProductDetails } from './pages/ProductDetails';
@@ -9,10 +10,14 @@ import { Cart } from './pages/Cart';
 import { Checkout } from './pages/Checkout';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { Login } from './pages/Login';
+import OrderDetails from './pages/OrderDetails';
+import Profile from './pages/Profile';
+import Occasions from './pages/Occasions';
+import { OrderNotifications } from './components/OrderNotifications';
 
-const Router: React.FC = () => {
+const Router: React.FC<{ isDark: boolean; toggleDark: () => void }> = ({ isDark, toggleDark }) => {
   const [hash, setHash] = useState(window.location.hash || '#/');
-  const { user, orders } = useApp();
+  const { user, orders, getOrderById, updateUserProfile } = useApp();
 
   useEffect(() => {
     const handleHashChange = () => setHash(window.location.hash);
@@ -27,15 +32,18 @@ const Router: React.FC = () => {
       const id = hash.split('#/product/')[1];
       return <ProductDetails id={id} />;
     }
+    if (hash === '#/occasions') {
+      return <Occasions />;
+    }
     if (hash === '#/cart') return <Cart />;
     if (hash === '#/checkout') return <Checkout />;
     if (hash === '#/admin') {
       if (user?.role !== 'Admin') return (
-        <div className="min-h-[60vh] flex flex-col items-center justify-center p-20 text-center">
+        <div className="min-h-[60vh] flex flex-col items-center justify-center p-20 text-center dark:bg-stone-900">
            <span className="text-6xl mb-6">🔒</span>
-           <h2 className="text-3xl font-serif mb-4">Admin Access Only</h2>
-           <p className="text-stone-500 mb-8 max-w-md">You do not have the necessary permissions to view this section. Please login with an administrator account.</p>
-           <a href="#/login" className="bg-rose-primary text-white px-8 py-3 rounded-full font-bold">Switch Account</a>
+           <h2 className="text-3xl font-serif mb-4 text-stone-900 dark:text-white">Admin Access Only</h2>
+           <p className="text-stone-500 dark:text-stone-400 mb-8 max-w-md">You do not have the necessary permissions to view this section. Please login with an administrator account.</p>
+           <a href="#/login" className="btn-primary">Switch Account</a>
         </div>
       );
       return <AdminDashboard />;
@@ -47,6 +55,33 @@ const Router: React.FC = () => {
       }
       return <Login />;
     }
+    if (hash === '#/profile') {
+      if (!user) {
+        window.location.hash = '#/login';
+        return null;
+      }
+      return <Profile />;
+    }
+    if (hash.startsWith('#/orders/')) {
+      if (!user) {
+        window.location.hash = '#/login';
+        return null;
+      }
+      const orderId = hash.split('#/orders/')[1];
+      const order = getOrderById(orderId);
+      
+      if (!order || order.userId !== user.id) {
+        return (
+          <div className="min-h-[60vh] flex flex-col items-center justify-center p-20 text-center dark:bg-stone-900">
+            <span className="text-6xl mb-6">❌</span>
+            <h2 className="text-3xl font-serif mb-4 text-stone-900 dark:text-white">Order Not Found</h2>
+            <p className="text-stone-500 dark:text-stone-400 mb-8">This order doesn't exist or you don't have access to it.</p>
+            <a href="#/dashboard" className="btn-primary">Back to Orders</a>
+          </div>
+        );
+      }
+      return <OrderDetails order={order} />;
+    }
     if (hash === '#/dashboard') {
       if (!user) {
         window.location.hash = '#/login';
@@ -55,63 +90,88 @@ const Router: React.FC = () => {
       const myOrders = orders.filter(o => o.userId === user.id);
       
       return (
-        <div className="max-w-4xl mx-auto py-20 px-4">
-          <div className="flex items-center gap-6 mb-12">
-            <div className="w-20 h-20 rounded-full bg-rose-primary text-white flex items-center justify-center text-3xl font-serif">
-              {user.name[0]}
-            </div>
-            <div>
-              <h1 className="text-4xl font-serif mb-1">Hello, {user.name}</h1>
-              <p className="text-stone-500">Member since {new Date().getFullYear()}</p>
-            </div>
-          </div>
-
-          <h2 className="text-2xl font-serif mb-8">Your Recent Orders</h2>
-          <div className="space-y-6">
-            {myOrders.length > 0 ? (
-              myOrders.map(order => (
-                <div key={order.id} className="bg-white p-6 rounded-3xl border border-rose-50 shadow-sm flex flex-col md:flex-row justify-between gap-4">
-                  <div>
-                    <p className="text-xs text-stone-400 uppercase tracking-widest mb-1">Order #{order.id}</p>
-                    <p className="font-bold">Placed on {new Date(order.createdAt).toLocaleDateString()}</p>
-                    <p className="text-sm text-stone-500 mt-1">{order.items.length} items • Rs. {order.total.toLocaleString()}</p>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <span className="px-4 py-1.5 rounded-full text-xs font-bold bg-rose-50 text-rose-primary border border-rose-100 uppercase">
-                      {order.status}
-                    </span>
-                    <a href={`#/orders/${order.id}`} className="text-stone-400 hover:text-stone-900 transition-colors">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                      </svg>
-                    </a>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-20 bg-stone-50 rounded-[40px] border border-dashed border-stone-200">
-                <p className="text-stone-400 font-serif text-xl mb-4">No orders yet</p>
-                <a href="#/shop" className="text-rose-primary font-bold underline">Go find your first bloom</a>
+        <div className="min-h-screen bg-gradient-to-b from-floral-pastel via-white to-floral-pastel dark:from-stone-900 dark:via-stone-850 dark:to-stone-900">
+          <div className="max-w-4xl mx-auto py-20 px-4">
+            <div className="flex items-center gap-6 mb-12">
+              <div className="w-20 h-20 rounded-full bg-gradient-rose text-white flex items-center justify-center text-3xl font-serif shadow-lg">
+                {user.name[0]}
               </div>
-            )}
+              <div>
+                <h1 className="text-4xl font-serif mb-1 text-stone-900 dark:text-white">Hello, {user.name}</h1>
+                <p className="text-stone-500 dark:text-stone-400">Member since {new Date().getFullYear()}</p>
+              </div>
+              <a href="#/profile" className="ml-auto btn-primary text-sm">Edit Profile</a>
+            </div>
+
+            {/* Order Notifications */}
+            <div className="mb-12">
+              <OrderNotifications />
+            </div>
+
+            <h2 className="text-2xl font-serif mb-8 text-stone-900 dark:text-white">Your Recent Orders</h2>
+            <div className="space-y-6">
+              {myOrders.length > 0 ? (
+                myOrders.map(order => (
+                  <div key={order.id} className="card dark:bg-stone-800 dark:border dark:border-stone-700 flex flex-col md:flex-row justify-between gap-4 hover:shadow-glass-lg transition-all">
+                    <div>
+                      <p className="text-xs text-stone-400 uppercase tracking-widest mb-1">Order #{order.id}</p>
+                      <p className="font-bold text-stone-900 dark:text-white">Placed on {new Date(order.createdAt).toLocaleDateString()}</p>
+                      <p className="text-sm text-stone-500 dark:text-stone-400 mt-1">{order.items.length} items • Rs. {order.total.toLocaleString()}</p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="px-4 py-1.5 rounded-full text-xs font-bold bg-rose-50 dark:bg-rose-900/30 text-rose-primary dark:text-rose-400 border border-rose-100 dark:border-rose-900 uppercase">
+                        {order.status}
+                      </span>
+                      <a href={`#/orders/${order.id}`} className="text-stone-400 hover:text-rose-primary dark:hover:text-rose-400 transition-colors" title="View order details">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </a>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-20 glass dark:glass-dark rounded-[40px] border border-dashed border-stone-200 dark:border-stone-700">
+                  <p className="text-stone-400 dark:text-stone-500 font-serif text-xl mb-4">No orders yet</p>
+                  <a href="#/shop" className="text-rose-primary dark:text-rose-400 font-bold hover:underline">Go find your first bloom</a>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       );
     }
 
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center p-20 text-center">
+      <div className="min-h-[60vh] flex flex-col items-center justify-center p-20 text-center dark:bg-stone-900">
          <span className="text-6xl mb-6">🥀</span>
-         <h2 className="text-3xl font-serif mb-4">Page Not Found</h2>
-         <p className="text-stone-500 mb-8">We couldn't find the page you're looking for.</p>
-         <a href="#/" className="bg-rose-primary text-white px-8 py-3 rounded-full font-bold">Return Home</a>
+         <h2 className="text-3xl font-serif mb-4 text-stone-900 dark:text-white">Page Not Found</h2>
+         <p className="text-stone-500 dark:text-stone-400 mb-8">We couldn't find the page you're looking for.</p>
+         <a href="#/" className="btn-primary">Return Home</a>
       </div>
     );
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
+    <div className={`min-h-screen flex flex-col transition-colors duration-300 ${isDark ? 'dark' : ''}`}>
+      <div className="relative">
+        <Header />
+        <button
+          onClick={toggleDark}
+          className="absolute top-4 right-20 z-40 p-2 rounded-full border border-rose-200 dark:border-stone-700 bg-white dark:bg-stone-800 hover:bg-rose-50 dark:hover:bg-stone-700 transition-colors focus:outline-none focus:ring-2 focus:ring-rose-300"
+          aria-label="Toggle dark mode"
+        >
+          {isDark ? (
+            <svg className="w-6 h-6 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 3v1m0 16v1m9-9h-1m-16 0H1m15.364 1.636l.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          ) : (
+            <svg className="w-6 h-6 text-slate-700" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          )}
+        </button>
+      </div>
       <main className="flex-grow">
         {renderPage()}
       </main>
@@ -121,9 +181,31 @@ const Router: React.FC = () => {
 };
 
 const App: React.FC = () => {
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('theme');
+      if (saved) return saved === 'dark';
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
+
+  const toggleDark = () => {
+    setIsDark(!isDark);
+    localStorage.setItem('theme', !isDark ? 'dark' : 'light');
+  };
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDark]);
+
   return (
     <AppProvider>
-      <Router />
+      <Router isDark={isDark} toggleDark={toggleDark} />
     </AppProvider>
   );
 };

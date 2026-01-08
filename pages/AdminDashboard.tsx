@@ -2,6 +2,8 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../store/AppContext';
 import { Category, OrderStatus } from '../types';
+import { ProductEditModal } from '../components/ProductEditModal';
+
 
 const getStatusColor = (status: OrderStatus) => {
   switch (status) {
@@ -19,6 +21,8 @@ export const AdminDashboard: React.FC = () => {
   const { products, orders, updateProduct, deleteProduct, updateOrderStatus } = useApp();
   const [tab, setTab] = useState<'products' | 'orders'>('products');
   const [orderFilter, setOrderFilter] = useState<OrderStatus | 'All'>('All');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
 
   const totalSales = orders.reduce((sum, o) => o.status === OrderStatus.DELIVERED ? sum + o.total : sum, 0);
 
@@ -78,19 +82,10 @@ export const AdminDashboard: React.FC = () => {
             <h2 className="text-2xl font-serif">Inventory Management</h2>
             <button 
               onClick={() => {
-                const name = prompt('Product Name:');
-                if (name) updateProduct({
-                  id: Date.now().toString(),
-                  name,
-                  category: Category.FRESH_FLOWERS,
-                  price: 1000,
-                  description: 'New product description',
-                  images: ['https://picsum.photos/seed/new/800/800'],
-                  stock: 10,
-                  featured: false
-                });
+                setEditingProduct(null);
+                setIsModalOpen(true);
               }}
-              className="bg-rose-primary text-white px-6 py-2 rounded-full text-sm font-bold"
+              className="bg-rose-primary text-white px-6 py-2 rounded-full text-sm font-bold hover:shadow-lg transition-all"
             >
               + Add Product
             </button>
@@ -112,7 +107,7 @@ export const AdminDashboard: React.FC = () => {
                   return (
                     <tr key={p.id} className={`transition-colors ${isLowStock ? 'bg-red-50/50' : 'hover:bg-stone-50'}`}>
                       <td className="px-8 py-4 flex items-center gap-4">
-                        <img src={p.images[0]} className="w-10 h-10 rounded-lg object-cover" />
+                        <img src={p.images[0]} className="w-10 h-10 rounded-lg object-cover" alt={p.name} title={p.name} />
                         <span className="font-medium">{p.name}</span>
                       </td>
                       <td className="px-8 py-4 text-sm text-stone-500">{p.category}</td>
@@ -124,7 +119,27 @@ export const AdminDashboard: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-8 py-4 flex gap-4 text-sm">
-                        <button onClick={() => deleteProduct(p.id)} className="text-red-400 hover:text-red-600 transition-colors">Delete</button>
+                        <button 
+                          onClick={() => {
+                            setEditingProduct(p);
+                            setIsModalOpen(true);
+                          }}
+                          className="text-blue-600 hover:text-blue-800 transition-colors font-bold"
+                          title="Edit product"
+                        >
+                          ✏️ Edit
+                        </button>
+                        <button 
+                          onClick={() => {
+                            if (confirm(`Delete "${p.name}"?`)) {
+                              deleteProduct(p.id);
+                            }
+                          }}
+                          className="text-red-600 hover:text-red-800 transition-colors font-bold"
+                          title="Delete product"
+                        >
+                          🗑️ Delete
+                        </button>
                       </td>
                     </tr>
                   );
@@ -250,6 +265,18 @@ export const AdminDashboard: React.FC = () => {
           )}
         </div>
       )}
+
+      <ProductEditModal
+        product={editingProduct}
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingProduct(null);
+        }}
+        onSave={(product) => {
+          updateProduct(product);
+        }}
+      />
     </div>
   );
 };
