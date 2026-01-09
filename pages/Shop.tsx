@@ -1,23 +1,40 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useApp } from '../store/AppContext';
 import { Category } from '../types';
+import { LoadingProductSkeleton } from '../components/LoadingSkeleton';
 
 export const Shop: React.FC = () => {
   const { products } = useApp();
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<Category | 'All'>('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
+
+  // Simulate loading state for initial page load
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 300);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Debounce search input for better performance (500ms delay)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const filteredProducts = useMemo(() => {
     return products.filter(p => {
       const matchCat = selectedCategory === 'All' || p.category === selectedCategory;
-      const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          p.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchSearch = p.name.toLowerCase().includes(debouncedSearch.toLowerCase()) || 
+                          p.description.toLowerCase().includes(debouncedSearch.toLowerCase());
       const matchPrice = p.price >= priceRange[0] && p.price <= priceRange[1];
       return matchCat && matchSearch && matchPrice;
     });
-  }, [products, selectedCategory, searchQuery, priceRange]);
+  }, [products, selectedCategory, debouncedSearch, priceRange]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-floral-pastel via-white to-floral-pastel dark:from-stone-900 dark:via-stone-850 dark:to-stone-900">
@@ -34,62 +51,52 @@ export const Shop: React.FC = () => {
             {/* Search */}
             <div className="space-y-3">
               <h3 className="font-serif text-xl text-stone-900 dark:text-white">🔍 Search</h3>
-              <div className="relative group">
+              <div className="relative">
                 <input 
                   type="text" 
-                  placeholder="Search by name, color..."
-                  className="input-primary dark:bg-stone-800 dark:border-stone-700 dark:text-white dark:placeholder-stone-500 w-full"
+                  placeholder="Search flowers..."
+                  className="input-primary dark:bg-stone-800 dark:border-stone-700 dark:text-white dark:placeholder-stone-500 w-full pl-10"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  title="Search for flowers by name or description"
-                  aria-label="Search flowers"
+                  title="Search products by name or description"
+                  aria-label="Search products"
                 />
-                <svg className="w-5 h-5 absolute right-3 top-3.5 text-stone-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 absolute left-3 top-3 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-10 top-3.5 text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
-                    title="Clear search"
-                    aria-label="Clear search"
-                  >
-                    ✕
-                  </button>
-                )}
               </div>
               {searchQuery && (
                 <p className="text-xs text-stone-500 dark:text-stone-400">
-                  Found {filteredProducts.length} {filteredProducts.length === 1 ? 'result' : 'results'}
+                  Found {filteredProducts.length} result{filteredProducts.length !== 1 ? 's' : ''}
                 </p>
               )}
             </div>
 
             {/* Categories */}
             <div className="space-y-3">
-              <h3 className="font-serif text-xl text-stone-900 dark:text-white">Categories</h3>
+              <h3 className="font-serif text-xl text-stone-900 dark:text-white">📚 Categories</h3>
               <div className="space-y-2">
                 <button 
                   onClick={() => setSelectedCategory('All')}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-all duration-300 ${
+                  className={`w-full text-left px-4 py-3 rounded-[20px] font-bold transition-all duration-300 uppercase tracking-widest text-sm ${
                     selectedCategory === 'All' 
-                      ? 'bg-gradient-rose text-white shadow-lg' 
-                      : 'text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800'
+                      ? 'bg-gradient-rose text-white shadow-lg scale-105' 
+                      : 'text-stone-700 dark:text-stone-300 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700'
                   }`}
                 >
-                  All Products
+                  🌹 All Products
                 </button>
                 {Object.values(Category).map(cat => (
                   <button 
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-all duration-300 ${
+                    className={`w-full text-left px-4 py-3 rounded-[20px] font-bold transition-all duration-300 uppercase tracking-widest text-sm ${
                       selectedCategory === cat 
-                        ? 'bg-gradient-rose text-white shadow-lg' 
-                        : 'text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800'
+                        ? 'bg-gradient-rose text-white shadow-lg scale-105' 
+                        : 'text-stone-700 dark:text-stone-300 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700'
                     }`}
                   >
-                    {cat}
+                    ✿ {cat}
                   </button>
                 ))}
               </div>
@@ -131,7 +138,11 @@ export const Shop: React.FC = () => {
                 <h2 className="text-3xl font-serif text-stone-900 dark:text-white">{selectedCategory}</h2>
                 <p className="text-stone-600 dark:text-stone-400 mt-1">{filteredProducts.length} products found</p>
               </div>
-              <select className="px-4 py-2 rounded-xl border border-rose-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-white font-medium focus:ring-2 focus:ring-rose-300 outline-none cursor-pointer">
+              <select 
+                title="Sort products by different criteria"
+                aria-label="Sort products"
+                className="px-4 py-2 rounded-[20px] border border-rose-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-white font-medium focus:ring-2 focus:ring-rose-300 outline-none cursor-pointer transition-all duration-300 hover:border-rose-400 dark:hover:border-rose-500"
+              >
                 <option>Newest First</option>
                 <option>Price: Low to High</option>
                 <option>Price: High to Low</option>
@@ -139,7 +150,9 @@ export const Shop: React.FC = () => {
               </select>
             </div>
 
-            {filteredProducts.length > 0 ? (
+            {isLoading ? (
+              <LoadingProductSkeleton />
+            ) : filteredProducts.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 {filteredProducts.map((product, idx) => {
                   const isLowStock = product.stock < 5;

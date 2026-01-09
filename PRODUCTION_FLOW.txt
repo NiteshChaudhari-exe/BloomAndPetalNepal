@@ -1,0 +1,231 @@
+# 🎨 PRODUCTION SETUP FLOWCHART
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  START: Production Setup for Bloom & Petal Nepal            │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+        ┌────────────────────────────┐
+        │  STEP 1: Fix .env.local    │ (2 min)
+        │  ✗ Delete Line 1           │
+        │    GEMINI_API_KEY=...      │
+        └────────────┬───────────────┘
+                     │
+                     ▼
+        ┌────────────────────────────┐
+        │  STEP 2: Get API Key       │ (5 min)
+        │  ✓ Visit ai.google.dev     │
+        │  ✓ Copy key (AIzaSy...)    │
+        │  ✓ Save safely             │
+        └────────────┬───────────────┘
+                     │
+                     ▼
+        ┌────────────────────────────┐
+        │  STEP 3: Update .env.local │ (1 min)
+        │  ✓ Line 6: Add real key    │
+        │    VITE_GEMINI_API_KEY=... │
+        └────────────┬───────────────┘
+                     │
+                     ▼
+        ┌────────────────────────────┐
+        │  STEP 4: Clean File        │ (2 min)
+        │  ✓ Keep essentials only    │
+        │  ✓ Comment out rest        │
+        └────────────┬───────────────┘
+                     │
+                     ▼
+        ┌────────────────────────────┐
+        │  STEP 5: Test Locally      │ (5 min)
+        │  ✓ npm run build           │
+        │  ✓ npm run preview         │
+        │  ✓ Check browser (no err)  │
+        └────────────┬───────────────┘
+                     │
+                     ▼
+        ┌────────────────────────────────────────┐
+        │  STEP 6: Choose Deployment Platform   │
+        └────┬───────────────────────────────────┘
+             │
+    ┌────────┼────────┬──────────┐
+    │        │        │          │
+    ▼        ▼        ▼          ▼
+  VERCEL  NETLIFY  GITHUB    DOCKER
+  (Easy)  (Easy)   (Free)    (Control)
+    │        │        │          │
+    ▼        ▼        ▼          ▼
+  [A]      [B]      [C]        [D]
+    │        │        │          │
+    └────────┼────────┼──────────┘
+             │
+             ▼
+    ┌────────────────────────────────────┐
+    │  Add Environment Variables in      │
+    │  Platform Dashboard                │
+    │  VITE_GEMINI_API_KEY = (your key)  │
+    └────────────┬─────────────────────┘
+                 │
+                 ▼
+        ┌────────────────────────────┐
+        │  DEPLOY & REDEPLOY         │
+        │  ✓ Wait 1-2 minutes        │
+        └────────────┬───────────────┘
+                     │
+                     ▼
+        ┌────────────────────────────┐
+        │  TEST LIVE                 │
+        │  ✓ Visit live URL          │
+        │  ✓ Test all features       │
+        │  ✓ Check console (no err)  │
+        └────────────┬───────────────┘
+                     │
+                     ▼
+        ┌────────────────────────────┐
+        │  ✅ YOU'RE LIVE!            │
+        │     Go celebrate! 🎉       │
+        └────────────────────────────┘
+```
+
+---
+
+## 📌 PLATFORM DETAILS
+
+### [A] VERCEL (Recommended)
+```
+1. npm install -g vercel
+2. vercel --prod
+3. Dashboard → Env Variables
+4. Add: VITE_GEMINI_API_KEY = (key)
+5. Redeploy
+✅ Live at: https://bloom-petal-nepal.vercel.app
+```
+
+### [B] NETLIFY (Recommended)
+```
+1. Push to GitHub
+2. netlify.com → Add new site
+3. Connect GitHub repo
+4. Build: npm run build
+5. Publish: dist
+6. Site settings → Environment
+7. Add: VITE_GEMINI_API_KEY = (key)
+✅ Live at: https://bloom-petal.netlify.app
+```
+
+### [C] GITHUB PAGES (Free)
+```
+1. Push to GitHub
+2. Settings → Pages
+3. Build from main branch
+4. ⚠️ Limited (static site only)
+✅ Live at: https://username.github.io/BloomAndPetalNepal
+```
+
+### [D] DOCKER (Full Control)
+```
+1. docker build -t bloom-petal .
+2. docker run -p 3000:3000 \
+     -e VITE_GEMINI_API_KEY=AIzaSy... \
+     bloom-petal
+✅ Running at: http://localhost:3000
+```
+
+---
+
+## 🎯 DECISION MATRIX
+
+| Factor | Vercel | Netlify | Docker |
+|--------|--------|---------|--------|
+| **Ease** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ |
+| **Speed** | 5 min | 5 min | 15 min |
+| **Cost** | Free | Free | $5-20/mo |
+| **Control** | Limited | Limited | Full |
+| **Best For** | Quick deploy | GitHub users | Self-hosted |
+
+→ **RECOMMENDATION**: Start with **Vercel** or **Netlify**
+
+---
+
+## 🔐 SECURITY CHECKLIST
+
+```
+BEFORE SHARING / COMMITTING:
+
+✓ .env.local NOT committed to Git
+✓ API key NOT in source code
+✓ API key NOT shared in messages
+✓ Only added in platform dashboard
+✓ .gitignore includes .env.local
+✓ Key has API restrictions (Google Cloud)
+✓ Key NOT used elsewhere
+
+✗ DON'T share key in email
+✗ DON'T commit to GitHub
+✗ DON'T hardcode in code
+✗ DON'T use on untrusted machines
+```
+
+---
+
+## ✅ FINAL CHECKLIST
+
+```
+Ready to Deploy Checklist:
+
+PRE-DEPLOYMENT:
+☐ Line 1 deleted from .env.local
+☐ VITE_GEMINI_API_KEY updated with real key
+☐ npm run build passes (no errors)
+☐ npm run preview works locally
+☐ Console has no errors
+☐ .gitignore protects .env.local
+☐ Git not tracking .env.local
+
+DURING-DEPLOYMENT:
+☐ Code deployed to platform
+☐ API key added to platform dashboard
+☐ Redeploy triggered
+☐ Build completes successfully
+
+POST-DEPLOYMENT:
+☐ Live URL loads (takes 1-2 min)
+☐ All pages work
+☐ Cart functions correctly
+☐ Dark mode toggles
+☐ Dark mode persists
+☐ No console errors
+☐ Mobile responsive
+☐ Try in different browser
+
+FINAL:
+☐ Share live URL with team
+☐ Announce launch
+☐ Monitor for issues
+```
+
+---
+
+## 📞 QUICK LINKS
+
+| Document | Purpose |
+|----------|---------|
+| [ENV_SETUP_GUIDE.md](./ENV_SETUP_GUIDE.md) | Detailed .env setup |
+| [PRODUCTION_SETUP.txt](./PRODUCTION_SETUP.txt) | Quick overview |
+| [QUICK_DEPLOYMENT.md](./QUICK_DEPLOYMENT.md) | 5-minute deployment |
+| [PRODUCTION_DEPLOYMENT.md](./PRODUCTION_DEPLOYMENT.md) | All platforms detailed |
+| [PRE_DEPLOYMENT_CHECKLIST.md](./PRE_DEPLOYMENT_CHECKLIST.md) | Final verification |
+
+---
+
+## 🎉 YOU'RE READY!
+
+**Time to production**: 25 minutes  
+**Difficulty**: ⭐⭐ (Easy)  
+**Result**: Live website 🚀
+
+**Start now**: Delete line 1 from `.env.local`
+
+---
+
+**Questions?** Check the detailed guides above.  
+**Ready?** Follow the flowchart and you'll be live soon! 🎉

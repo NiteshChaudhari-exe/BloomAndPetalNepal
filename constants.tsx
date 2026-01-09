@@ -1,6 +1,38 @@
+/**
+ * @file constants.tsx
+ * @description Mock data and constants used throughout the application.
+ * Contains product catalog, locations, and other hardcoded configuration data.
+ * 
+ * IMPORTANT: For production deployment:
+ * - Replace MOCK_PRODUCTS with API calls to backend
+ * - Move NEPAL_LOCATIONS to database
+ * - Consider moving this to a config file
+ * 
+ * @author Bloom & Petal Nepal Team
+ * @version 1.0
+ */
 
 import { Category, Product } from './types';
 
+/**
+ * MOCK_PRODUCTS - Sample product data for development and demonstration.
+ * This is a collection of 6 different products showcasing various categories.
+ * 
+ * PRODUCTION NOTE: Replace with real product data from your backend API:
+ * @example
+ * const [products, setProducts] = useState<Product[]>([]);
+ * useEffect(() => {
+ *   fetch('/api/products')
+ *     .then(res => res.json())
+ *     .then(data => setProducts(data));
+ * }, []);
+ * 
+ * Each product includes:
+ * - Complete product information (name, price, description, images)
+ * - Inventory tracking (stock quantity)
+ * - Featured flag for homepage promotion
+ * - Occasion tags for occasion-based filtering
+ */
 export const MOCK_PRODUCTS: Product[] = [
   {
     id: '1',
@@ -68,6 +100,26 @@ export const MOCK_PRODUCTS: Product[] = [
   }
 ];
 
+/**
+ * NEPAL_LOCATIONS - List of cities/locations in Nepal where delivery is available.
+ * Used for shipping address validation and delivery scope information.
+ * 
+ * EXPANDABLE: Add more locations as service coverage expands.
+ * 
+ * These locations represent major cities and towns across Nepal:
+ * - Kathmandu, Lalitpur, Bhaktapur: Kathmandu Valley (Central)
+ * - Pokhara: Western Region
+ * - Chitwan: Central Region
+ * - Butwal, Dharan, Itahari, Biratnagar: Other major cities
+ */
 export const NEPAL_LOCATIONS = [
-  'Kathmandu', 'Lalitpur', 'Bhaktapur', 'Pokhara', 'Chitwan', 'Butwal', 'Dharan', 'Itahari', 'Biratnagar'
+  'Kathmandu',   // Capital city - primary market
+  'Lalitpur',    // Adjacent to Kathmandu
+  'Bhaktapur',   // Historic city near Kathmandu
+  'Pokhara',     // Major tourist hub in western region
+  'Chitwan',     // Popular tourist destination
+  'Butwal',      // Gateway to western Nepal
+  'Dharan',      // Eastern region
+  'Itahari',     // Eastern region
+  'Biratnagar'   // Largest city in eastern region
 ];

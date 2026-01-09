@@ -1,27 +1,93 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../store/AppContext';
 import { Category } from '../types';
 
+type Season = 'spring' | 'summer' | 'autumn' | 'winter';
+
+const getSeasonalTheme = (season: Season) => {
+  const themes = {
+    spring: {
+      emoji: '🌷',
+      title: 'Spring Bloom',
+      gradient: 'from-pink-100 to-purple-100',
+      darkGradient: 'dark:from-pink-900 dark:to-purple-900',
+      accent: 'text-pink-600 dark:text-pink-400',
+      bg: 'bg-gradient-to-br from-pink-50 to-purple-50 dark:from-stone-800 dark:to-stone-900'
+    },
+    summer: {
+      emoji: '🌻',
+      title: 'Summer Rays',
+      gradient: 'from-yellow-100 to-orange-100',
+      darkGradient: 'dark:from-yellow-900 dark:to-orange-900',
+      accent: 'text-yellow-600 dark:text-yellow-400',
+      bg: 'bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-stone-800 dark:to-stone-900'
+    },
+    autumn: {
+      emoji: '🍂',
+      title: 'Autumn Harvest',
+      gradient: 'from-amber-100 to-red-100',
+      darkGradient: 'dark:from-amber-900 dark:to-red-900',
+      accent: 'text-amber-600 dark:text-amber-400',
+      bg: 'bg-gradient-to-br from-amber-50 to-red-50 dark:from-stone-800 dark:to-stone-900'
+    },
+    winter: {
+      emoji: '❄️',
+      title: 'Winter Frost',
+      gradient: 'from-blue-100 to-slate-100',
+      darkGradient: 'dark:from-blue-900 dark:to-slate-900',
+      accent: 'text-blue-600 dark:text-blue-400',
+      bg: 'bg-gradient-to-br from-blue-50 to-slate-50 dark:from-stone-800 dark:to-stone-900'
+    }
+  };
+  return themes[season];
+};
+
+const getCurrentSeason = (): Season => {
+  const month = new Date().getMonth();
+  if (month >= 2 && month <= 4) return 'spring';
+  if (month >= 5 && month <= 7) return 'summer';
+  if (month >= 8 && month <= 10) return 'autumn';
+  return 'winter';
+};
+
 export const Home: React.FC = () => {
   const { products } = useApp();
+  const [season, setSeason] = useState<Season>(getCurrentSeason());
+  const theme = getSeasonalTheme(season);
   const featuredProducts = products.filter(p => p.featured).slice(0, 4);
+
+  useEffect(() => {
+    // Update season display every day
+    const timer = setInterval(() => {
+      setSeason(getCurrentSeason());
+    }, 3600000); // Check every hour
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-floral-pastel via-white to-floral-pastel dark:from-stone-900 dark:via-stone-850 dark:to-stone-900">
+      {/* Seasonal Theme Banner */}
+      <div className={`${theme.bg} py-3 px-4 text-center border-b border-stone-200 dark:border-stone-700`}>
+        <p className={`${theme.accent} font-semibold text-sm tracking-widest flex items-center justify-center gap-2`}>
+          <span className="text-2xl">{theme.emoji}</span>
+          {theme.title} Collection Now Available
+        </p>
+      </div>
+
       {/* Hero Section */}
       <section className="relative h-[85vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-rose-100/50 via-floral-pastel to-white dark:from-stone-900 dark:via-stone-800 dark:to-stone-900"></div>
+        <div className={`absolute inset-0 bg-gradient-to-br ${theme.gradient} ${theme.darkGradient}`}></div>
         <img 
           src="https://images.unsplash.com/photo-1490750967868-88aa4486c946?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" 
           alt="Hero Flowers" 
           className="absolute inset-0 w-full h-full object-cover opacity-30 dark:opacity-15 mix-blend-overlay"
         />
-        <div className="absolute top-0 right-0 w-96 h-96 bg-rose-300/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-rose-200/20 rounded-full blur-3xl"></div>
+        <div className={`absolute top-0 right-0 w-96 h-96 ${theme.gradient} rounded-full blur-3xl opacity-20`}></div>
+        <div className={`absolute bottom-0 left-0 w-96 h-96 ${theme.gradient} rounded-full blur-3xl opacity-20`}></div>
         
         <div className="relative z-10 text-center px-4 max-w-4xl">
-          <span className="text-rose-600 dark:text-rose-400 font-semibold tracking-widest uppercase text-xs block mb-6 animate-fade-in">✨ Celebrating Life's Moments</span>
+          <span className={`${theme.accent} font-semibold tracking-widest uppercase text-xs block mb-6 animate-fade-in`}>✨ Celebrating Life's Moments</span>
           <h1 className="text-6xl md:text-7xl lg:text-8xl font-serif mb-6 text-stone-900 dark:text-white leading-tight animate-fade-in">
             Flowers That <br />
             <span className="italic bg-gradient-rose bg-clip-text text-transparent">Whisper Love</span>
@@ -33,23 +99,56 @@ export const Home: React.FC = () => {
             <a href="#/shop" className="btn-primary shadow-lg shadow-rose-300/50 hover:shadow-rose-400/70">
               Shop Collections
             </a>
-            <a href="#/custom" className="btn-secondary hover:shadow-lg">
-              Custom Bouquet
+            <a href="#/occasions" className="btn-secondary hover:shadow-lg">
+              Browse by Occasion
             </a>
           </div>
         </div>
       </section>
 
-      {/* Categories */}
-      <section className="py-24 px-4 max-w-7xl mx-auto">
-        <div className="flex justify-between items-end mb-16">
-          <div className="space-y-4">
-            <h2 className="section-title dark:text-white">Browse by Category</h2>
-            <div className="w-24 h-1.5 bg-gradient-rose rounded-full"></div>
+      {/* Seasonal Themes Showcase */}
+      <section className="py-20 px-4 max-w-7xl mx-auto">
+        <div className="mb-12 text-center">
+          <h2 className="section-title dark:text-white mb-4">Seasonal Collections</h2>
+          <p className="text-stone-600 dark:text-stone-400">Discover flowers curated for every season</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {(['spring', 'summer', 'autumn', 'winter'] as Season[]).map((s) => {
+            const t = getSeasonalTheme(s);
+            return (
+              <button
+                key={s}
+                onClick={() => setSeason(s)}
+                className={`p-8 rounded-3xl text-center transition-all duration-300 transform hover:scale-105 cursor-pointer border-2 ${
+                  season === s
+                    ? `${t.bg} border-stone-300 dark:border-stone-600 ring-2 ring-offset-2 ring-rose-primary`
+                    : 'bg-white dark:bg-stone-800 border-stone-200 dark:border-stone-700 hover:border-stone-300'
+                }`}
+              >
+                <div className="text-5xl mb-3">{t.emoji}</div>
+                <h3 className={`font-serif text-xl mb-2 ${season === s ? t.accent : 'text-stone-900 dark:text-white'}`}>
+                  {t.title}
+                </h3>
+                <p className="text-sm text-stone-600 dark:text-stone-400">View Collection</p>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Featured Categories */}
+      <section className="py-20 px-4 max-w-7xl mx-auto">
+        <div className="mb-12">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="section-title dark:text-white mb-2">Featured Categories</h2>
+              <p className="text-stone-600 dark:text-stone-400">Find the perfect flowers for any occasion</p>
+            </div>
+            <a href="#/shop" className="btn-primary text-sm gap-2 flex items-center">
+              View All <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+            </a>
           </div>
-          <a href="#/shop" className="text-rose-primary dark:text-rose-400 font-semibold hover:text-rose-accent transition-colors duration-300 flex items-center gap-2">
-            View All <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
-          </a>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {Object.values(Category).slice(0, 4).map((cat, idx) => (
